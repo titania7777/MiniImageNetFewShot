@@ -1,15 +1,24 @@
 ## UCF101
 -------------
-options
-1. frames_path = extracted frames folder path(you need to use our frame extractor !!)
-2. labels_path = labels folder path
-3. list_number = splited task numbers(trainlist01 ~ 03 = 9537, 9586, 9624 | testlist01 ~ 03 = 3783, 3734, 3696)
-4. frame_size = frame size(width and height is same)
-5. train = train mode, if this mode is True then the sampler read a trainlist text file to load dataset
-6. random_sample = (when interval mode is True)set interval and start position randomly, (when interval mode is False)sampled point without interval
-7. interval = choose uniform sample or not
+this UCF101 sampler utilize autoaugment[1] when scarcity of frame in dataset, and additionally you can check another options.
 
-if you want use this UCF101 sampler then please follow this commands.
+### common options
+1. frames_path: extracted frames folder path(you need to use our frame extractor !!)
+2. labels_path: labels folder path
+3. list_number: splited task numbers(trainlist01 ~ 03 = 9537, 9586, 9624 | testlist01 ~ 03 = 3783, 3734, 3696)
+4. frame_size: frame size(width and height is same)
+5. sequence_length: number of video frames
+6. train(default: True): train mode, if this mode is True then the sampler read a 'rainlist0x.txt' file to load dataset(False: test)
+7. random_pad_sample(default: True): randomly sample from existing frames when frames are insufficient(False: only use first frame)
+### pad options
+8. pad_option(default: 'default'): augment option, there is two option('default', 'autoaugment')
+9. uniform_frame_sample(default: True): uniformly sampled the frame(False: random normally)
+### frame sampler options
+10. random_start_position(default: True): randomly decides the starting point by considering the interval(False: 0)
+11. max_interval(default: 7): maximum frame interval, this value is high then you may miss the sequence of video
+12. random_interval(default: True): randomly decides the interval value(False: use maximum interval)
+
+
 download UCF101 dataset.
 ```
 wget http://hcir.iptime.org/UCF101.tar
@@ -18,22 +27,10 @@ extract frames from UCF101 videos.
 ```
 python frame_extractor.py
 ```
-example(default)
+train(example)
 ```
-from UCF101 import UCF101
-train_dataset = UCF101(
-    frames_path='./datas/UCF_frames/',
-    labels_path='./datas/UCF_labels/',
-    list_number=1,
-    frame_size=224,
-    sequence_length=80,
-    train=True,
-    random_sample_frame=True,
-    interval=False,
-)
-train_dataloader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True, num_workers=4)
+python train.py
 ```
 ## references
 -------------
-[1] matchingnet...
-[2] autoaugment...
+[1] Ekin D. Cubuk, Barret Zoph, Dandelion Mane, Vijay Vasudevan, Quoc V. Le; Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2019, pp. 113-123

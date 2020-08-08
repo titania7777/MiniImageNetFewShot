@@ -101,7 +101,8 @@ if __name__ == "__main__":
                     sum(train_acc)/len(train_acc),
                 )
             )
-        
+
+        print("")
         test_acc = []
         test_loss = []
         for i, (datas, labels) in enumerate(test_loader):
@@ -132,6 +133,7 @@ if __name__ == "__main__":
                 )
             )
         
+        print("")
         if sum(test_acc)/len(test_acc) > best:
             best = sum(test_acc)/len(test_acc)
         
