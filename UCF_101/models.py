@@ -6,17 +6,17 @@ class Model(nn.Module):
         super(Model, self).__init__()
         # Encoder(freeze)
         resnet = resnet18(pretrained=True)
-        self.encoder = nn.Sequential(*list(resnet.children())[:-2])
+        self.encoder = nn.Sequential(*list(resnet.children())[:-1])
         self._freeze(self.encoder)
         # LSTM
         self.lstm = nn.LSTM(resnet.fc.in_features, hidden_size, num_layers, batch_first=True, bidirectional=bidirectional)
         self.hidden = None
         # Classifier
         self.classifier = nn.Sequential(
-            nn.Linear(2*hidden_size if bidirectional else hidden_size, int(hidden_size/2)),
-            nn.BatchNorm1d(int(hidden_size/2)),
+            nn.Linear(2*hidden_size if bidirectional else hidden_size, hidden_size if bidirectional else int(hidden_size/2)),
+            nn.BatchNorm1d(hidden_size if bidirectional else int(hidden_size/2)),
             nn.ReLU(),
-            nn.Linear(int(hidden_size/2), num_classes),
+            nn.Linear(hidden_size if bidirectional else int(hidden_size/2), num_classes),
         )
         self.classifier.apply(self._initialize)
     
@@ -26,7 +26,7 @@ class Model(nn.Module):
     def forward(self, x):
         b, s, c, h, w = x.shape
         x = self.encoder(x.view(b*s, c, h ,w))
-        x = x.view(x.size(0), x.size(1), -1).mean(-1)
+        # x = x.view(x.size(0), x.size(1), -1).mean(-1)
         x, self.hidden = self.lstm(x.view(b, s, -1), self.hidden)
         x = self.classifier(x[:, -1])# last hidden
         return x
