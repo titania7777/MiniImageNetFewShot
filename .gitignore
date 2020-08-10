@@ -1,4 +1,4 @@
 # ignore datas
 /datas
 # ignore pycache
-/**/__pycache__
+__pycache__
