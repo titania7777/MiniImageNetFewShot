@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser.add_argument("--labels_path", type=str, default="../datas/UCF101_labels/")
     parser.add_argument("--list_number", type=int, default=1)
     parser.add_argument("--frame_size", type=str, default=224)
-    parser.add_argument("--num_epochs", type=int, default=100)
+    parser.add_argument("--num_epochs", type=int, default=20)
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--sequence_length", type=int, default=40)
     args = parser.parse_args()
