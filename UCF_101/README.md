@@ -2,6 +2,9 @@
 -------------
 this UCF101 sampler utilize autoaugment[1] when scarcity of frame in dataset, and additionally you can check another options.
 
+* this sampler is working for video action recognition !!
+if you want few-shot action recognition(not traditional action recognition) then [here](https://github.com/titania7777/video_few_shot/tree/master/UCF_101)
+
 ### common options
 1. frames_path: extracted frames folder path(you need to use our frame extractor !!)
 2. labels_path: labels folder path
