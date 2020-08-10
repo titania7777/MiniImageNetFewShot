@@ -52,8 +52,8 @@ if __name__ == "__main__":
         random_interval=False,
     )
 
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, drop_last=True)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4, drop_last=True)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=0 if os.name == 'nt' else 4, drop_last=True)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=0 if os.name == 'nt' else 4, drop_last=True)
 
     model = Model(
         num_classes=train_dataset.num_classes,
