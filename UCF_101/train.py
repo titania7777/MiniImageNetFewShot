@@ -1,4 +1,5 @@
 import torch
+import os
 import sys
 import argparse
 import torch.nn.functional as F
@@ -27,7 +28,7 @@ if __name__ == "__main__":
         train=True,
         # pad option
         random_pad_sample=True,
-        pad_option='autoaugment',
+        pad_option='default',
         # frame sampler option
         uniform_frame_sample=True,
         random_start_position=True,
@@ -75,7 +76,6 @@ if __name__ == "__main__":
             model.train()
             datas, labels = datas.to(device), labels.to(device)
             
-            model.init_hidden()
             pred = model(datas)
 
             loss = F.cross_entropy(pred, labels)
@@ -109,7 +109,6 @@ if __name__ == "__main__":
             model.eval()
             datas, labels = datas.to(device), labels.to(device)
             
-            model.init_hidden()
             pred = model(datas)
 
             loss = F.cross_entropy(pred, labels)
