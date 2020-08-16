@@ -102,7 +102,7 @@ if __name__ == "__main__":
             acc = 100 * (pred.argmax(1) == labels).type(torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor).mean().item()
             train_acc.append(acc)
 
-            printer(e, args.num_epochs, i+1, len(train_loader), loss.item(), sum(train_loss)/len(train_loss), acc, sum(train_acc)/len(train_acc))
+            printer("train", e, args.num_epochs, i+1, len(train_loader), loss.item(), sum(train_loss)/len(train_loss), acc, sum(train_acc)/len(train_acc))
 
         print("")
         test_acc = []
@@ -119,7 +119,7 @@ if __name__ == "__main__":
             acc = 100 * (pred.argmax(1) == labels).type(torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor).mean().item()
             test_acc.append(acc)
             
-            printer(e, args.num_epochs, i+1, len(train_loader), loss.item(), sum(train_loss)/len(train_loss), acc, sum(train_acc)/len(train_acc))
+            printer("test(val)", e, args.num_epochs, i+1, len(train_loader), loss.item(), sum(train_loss)/len(train_loss), acc, sum(train_acc)/len(train_acc))
         
         if sum(test_acc)/len(test_acc) > best:
             best = sum(test_acc)/len(test_acc)
