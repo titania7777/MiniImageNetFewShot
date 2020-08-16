@@ -5,6 +5,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 from autoaugment import ImageNetPolicy
+from sklearn.model_selection import train_test_split
 
 class MiniImageNet(Dataset):
     def __init__(self, images_path, labels_path, mode=False, setname='train', way=5, shot=1, query=15, augmentation=False, augment_rate=0.5):

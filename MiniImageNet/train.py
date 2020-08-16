@@ -7,6 +7,7 @@ from models import Model
 from torch.utils.data import DataLoader, random_split
 from torch.autograd import Variable
 from MiniImageNet import MiniImageNet, CategoriesSampler
+from sklearn.model_selection import train_test_split
 
 def printer(status, epoch, num_epochs, batch, num_batchs, loss, loss_mean, acc, acc_mean):
     sys.stdout.write("\r[{}]-[Epoch {}/{}] [Batch {}/{}] [Loss: {:.2f} (mean: {:.2f}), Acc: {:.2f}% (mean: {:.2f}%)]".format(
@@ -32,15 +33,15 @@ if __name__ == "__main__":
     parser.add_argument("--query", type=int, default=15)
     parser.add_argument("--augmentation", type=bool, default=False)
     parser.add_argument("--augment-rate", type=float, default=0.5)
-    parser.add_argument("--num-epochs-1", type=int, default=100)
-    parser.add_argument("--num-epochs-2", type=int, default=20)
+    parser.add_argument("--num-epochs-1", type=int, default=40)
+    parser.add_argument("--num-epochs-2", type=int, default=10)
     parser.add_argument("--batch-size-1", type=int, default=128)
     parser.add_argument("--batch-size-2", type=int, default=4)
     args = parser.parse_args()
 
     # for train backbone with linear classifier or few-shot manners
     if not args.mode:
-        dataset = MiniImageNet(
+        train_dataset = MiniImageNet(
             images_path=args.images_path,
             labels_path=args.labels_path,
             mode=args.mode,
@@ -49,10 +50,16 @@ if __name__ == "__main__":
             augment_rate=args.augment_rate,
         )
 
+        val_dataset = MiniImageNet(
+            images_path=args.images_path,
+            labels_path=args.labels_path,
+            mode=args.mode,
+            setname='train',
+            augmentation=False,
+        )
+
         # split dataset
-        train_size = int(0.7 * len(dataset))
-        val_size = len(dataset) - train_size
-        train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+        train_dataset.datas, val_dataset.datas, train_dataset.labels, val_dataset.labels = train_test_split(train_dataset.datas, train_dataset.labels, train_size=0.7)
 
         # data loader for train backbone
         train_loader = DataLoader(train_dataset, batch_size=args.batch_size_1, shuffle=True, num_workers=4)
@@ -79,8 +86,7 @@ if __name__ == "__main__":
         way=args.way,
         shot=args.shot,
         query=args.query,
-        augmentation=args.augmentation,
-        augment_rate=args.augment_rate,
+        augmentation=False,
     )
 
     few_shot_train_sampler = CategoriesSampler(few_shot_train_dataset, 100, args.batch_size_2, repeat=False)
@@ -92,7 +98,7 @@ if __name__ == "__main__":
 
     model = Model(
         mode=args.mode,
-        num_classes=dataset.num_classes,
+        num_classes=train_dataset.num_classes,
         way=args.way,
         shot=args.shot,
         query=args.query,
