@@ -16,9 +16,9 @@ this MiniImageNet sampler is support to autoaugment[1] when training phase.
 1. dataset: implemented MiniImageNet class is need
 2. iter_size: batch_size per iteration
 3. batch_size: batch_size per episode
-4. repeat: you can set the order of listing data, (default: False)
-*repeat is true (ex. [[1, 1, 1, 1, 1], [2, 2, 2, 2, 2], [3, 3, 3, 3, 3],...])
-*repeat is false (ex. [[1, 2, 3,...], [1, 2, 3,...], [1, 2, 3,...],...])
+4. repeat: you can set the order of listing data, (default: False)  
+*repeat is true (ex. [[1, 1, 1, 1, 1], [2, 2, 2, 2, 2], [3, 3, 3, 3, 3],...])  
+*repeat is false (ex. [[1, 2, 3,...], [1, 2, 3,...], [1, 2, 3,...],...])  
 
 download MiniImageNet dataset.
 ```
