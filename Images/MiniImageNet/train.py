@@ -25,7 +25,7 @@ def printer(status, epoch, num_epochs, batch, num_batchs, loss, loss_mean, acc, 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--images-path", type=str, default="../../datasets/mini_imagenet/images/")
+    parser.add_argument("--images-path", type=str, default="../Data/mini_imagenet/images/")
     parser.add_argument("--labels-path", type=str, default="./labels/")
     parser.add_argument("--mode", type=bool, default=False)
     parser.add_argument("--way", type=int, default=5)
@@ -34,11 +34,21 @@ if __name__ == "__main__":
     parser.add_argument("--augmentation", type=bool, default=False)
     parser.add_argument("--augment-rate", type=float, default=0.5)
     parser.add_argument("--num-epochs-1", type=int, default=40)
-    parser.add_argument("--num-epochs-2", type=int, default=10)
+    parser.add_argument("--num-epochs-2", type=int, default=200)
     parser.add_argument("--batch-size-1", type=int, default=128)
-    parser.add_argument("--batch-size-2", type=int, default=4)
+    parser.add_argument("--batch-size-2", type=int, default=1)
+    parser.add_argument("--learning-rate-1", type=float, default=1e-3)
+    parser.add_argument("--learning-rate-2", type=float, default=1e-3)
+    parser.add_argument("--scheduler-step-size-1", type=int, default=20)
+    parser.add_argument("--scheduler-step-size-2", type=int, default=20)
+    parser.add_argument("--scheduler-gamma-1", type=float, default=0.9)
+    parser.add_argument("--scheduler-gamma-2", type=float, default=0.9)
     args = parser.parse_args()
 
+    print("=================================================")
+    [print("{}:{}".format(arg, getattr(args, arg))) for arg in vars(args)]
+    print("=================================================")
+    
     # for train backbone with linear classifier or few-shot manners
     if not args.mode:
         train_dataset = MiniImageNet(
@@ -62,8 +72,8 @@ if __name__ == "__main__":
         train_dataset.datas, val_dataset.datas, train_dataset.labels, val_dataset.labels = train_test_split(train_dataset.datas, train_dataset.labels, train_size=0.7)
 
         # data loader for train backbone
-        train_loader = DataLoader(train_dataset, batch_size=args.batch_size_1, shuffle=True, num_workers=4)
-        val_loader = DataLoader(val_dataset, batch_size=args.batch_size_1, shuffle=False, num_workers=4)
+        train_loader = DataLoader(train_dataset, batch_size=args.batch_size_1, shuffle=True, num_workers=4, pin_memory=True)
+        val_loader = DataLoader(val_dataset, batch_size=args.batch_size_1, shuffle=False, num_workers=4, pin_memory=True)
 
     # for fine-tune or train from the scracth with few-shot manners
     few_shot_train_dataset = MiniImageNet(
@@ -98,7 +108,7 @@ if __name__ == "__main__":
 
     model = Model(
         mode=args.mode,
-        num_classes=train_dataset.num_classes,
+        num_classes=None if args.mode else train_dataset.num_classes,
         way=args.way,
         shot=args.shot,
         query=args.query,
@@ -109,8 +119,9 @@ if __name__ == "__main__":
     model = model.to(device)
 
     if not args.mode:
-        optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-        lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=int(args.num_epochs_1/4), gamma=0.25)
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate_1)
+        # optimizer = torch.optim.SGD(model.parameters(), lr=args.learning_rate_1, momentum=0.9, weight_decay=5e-4)
+        lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.scheduler_step_size_1, gamma=args.scheduler_gamma_1)
         
         best = 0
         for e in range(1, args.num_epochs_1+1):
@@ -157,8 +168,9 @@ if __name__ == "__main__":
             lr_scheduler.step()
     
     # few-shot
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=int(args.num_epochs_2/2), gamma=0.5)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate_2)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=args.learning_rate_2, momentum=0.9, weight_decay=5e-4)
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.scheduler_step_size_2, gamma=args.scheduler_gamma_2)
     
     best = 0
     for e in range(1, args.num_epochs_2+1):
@@ -203,5 +215,7 @@ if __name__ == "__main__":
         
         if sum(few_shot_val_acc)/len(few_shot_val_acc) > best:
             best = sum(few_shot_val_acc)/len(few_shot_val_acc)
+            torch.save(model.state_dict(), "./save/best.pth")
         print(" Best: {:.2f}%".format(best))
+
         lr_scheduler.step()

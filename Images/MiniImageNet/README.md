@@ -1,6 +1,6 @@
-## MiniImageNet
+## MiniImageNet Few-Shot Image Classification 
 -------------
-this MiniImageNet sampler is support to autoaugment[1] when training phase.
+```MiniImageNet.py``` sampler is support to autoaugment[1] when training phase.
 
 ## MiniImageNet Options
 1. images_path: raw images path

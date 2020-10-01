@@ -50,8 +50,7 @@ class Model(nn.Module):
             self.conv_block(64, 64),
         )
 
-        self.shot_scaler = nn.Parameter(torch.tensor(2.))
-        self.query_scaler = nn.Parameter(torch.tensor(2.))
+        self.scaler = nn.Parameter(torch.tensor(2.))
 
     def conv_block(self, in_channels, out_channels):
         bn = nn.BatchNorm2d(out_channels)
@@ -71,8 +70,8 @@ class Model(nn.Module):
             # make prototype
             shot = shot.view(batch_size, self.shot, self.way, -1).mean(dim=1)
 
-            shot = F.normalize(shot, dim=-1)*self.shot_scaler
-            query = F.normalize(query, dim=-1)*self.query_scaler
+            shot = F.normalize(shot, dim=-1)
+            query = F.normalize(query, dim=-1)
 
             return torch.bmm(query, shot.transpose(1, 2)).reshape(-1, self.way)
 
@@ -90,4 +89,4 @@ class Model(nn.Module):
             x = x.view(batch_size, self.way*self.query + self.way*self.shot, -1)
             x = self.cosine(x)
 
-        return x
+        return x * self.scaler
