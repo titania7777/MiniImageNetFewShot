@@ -9,20 +9,6 @@ from torch.autograd import Variable
 from MiniImageNet import MiniImageNet, CategoriesSampler
 from sklearn.model_selection import train_test_split
 
-def printer(status, epoch, num_epochs, batch, num_batchs, loss, loss_mean, acc, acc_mean):
-    sys.stdout.write("\r[{}]-[Epoch {}/{}] [Batch {}/{}] [Loss: {:.2f} (mean: {:.2f}), Acc: {:.2f}% (mean: {:.2f}%)]".format(
-            status,
-            epoch,
-            num_epochs,
-            batch,
-            num_batchs,
-            loss,
-            loss_mean,
-            acc,
-            acc_mean
-        )
-    )
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--images-path", type=str, default="../Data/mini_imagenet/images/")
