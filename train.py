@@ -33,7 +33,7 @@ if __name__ == "__main__":
     parser.add_argument("--scheduler-gamma-2", type=float, default=0.9) # for few-shot classification
     args = parser.parse_args()
 
-    save_path = os.path.join("./save", f"{date.today().strftime('%d-%m-%Y-%H:%M')}")
+    save_path = os.path.join("./save", f"{date.today().strftime('%M-%H-%d-%m-%Y')}")
 
     print("=================================================")
     [print("{}:{}".format(arg, getattr(args, arg))) for arg in vars(args)]
