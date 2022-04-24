@@ -1,5 +1,4 @@
 ## MiniImageNet Few-Shot Image Classification 
--------------
 ```MiniImageNet.py``` sampler is support to autoaugment[1] when training phase.
 
 ## MiniImageNet Options
@@ -22,7 +21,7 @@
 
 download MiniImageNet dataset.
 ```
-wget http://hcir.iptime.org/mini_imagenet_raw.tar
+https://lyy.mpi-inf.mpg.de/mtl/download/
 ```
 train(example)
 ```
