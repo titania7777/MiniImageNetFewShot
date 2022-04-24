@@ -3,7 +3,9 @@ import os
 import sys
 import argparse
 import torch.nn.functional as F
+from datetime import date
 from models import Model
+from utils import printer
 from torch.utils.data import DataLoader, random_split
 from torch.autograd import Variable
 from MiniImageNet import MiniImageNet, CategoriesSampler
@@ -11,25 +13,27 @@ from sklearn.model_selection import train_test_split
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--images-path", type=str, default="../Data/mini_imagenet/images/")
-    parser.add_argument("--labels-path", type=str, default="./labels/")
+    parser.add_argument("--images-path", type=str, default="./data/mini_imagenet")
+    parser.add_argument("--labels-path", type=str, default="./labels/mini_imagenet")
     parser.add_argument("--mode", type=bool, default=False)
     parser.add_argument("--way", type=int, default=5)
     parser.add_argument("--shot", type=int, default=1)
     parser.add_argument("--query", type=int, default=15)
     parser.add_argument("--augmentation", type=bool, default=False)
     parser.add_argument("--augment-rate", type=float, default=0.5)
-    parser.add_argument("--num-epochs-1", type=int, default=40)
-    parser.add_argument("--num-epochs-2", type=int, default=200)
-    parser.add_argument("--batch-size-1", type=int, default=128)
-    parser.add_argument("--batch-size-2", type=int, default=1)
-    parser.add_argument("--learning-rate-1", type=float, default=1e-3)
-    parser.add_argument("--learning-rate-2", type=float, default=1e-3)
-    parser.add_argument("--scheduler-step-size-1", type=int, default=20)
-    parser.add_argument("--scheduler-step-size-2", type=int, default=20)
-    parser.add_argument("--scheduler-gamma-1", type=float, default=0.9)
-    parser.add_argument("--scheduler-gamma-2", type=float, default=0.9)
+    parser.add_argument("--num-epochs-1", type=int, default=40) # for general classification
+    parser.add_argument("--num-epochs-2", type=int, default=100) # for few-shot classification
+    parser.add_argument("--batch-size-1", type=int, default=128) # for general classification
+    parser.add_argument("--batch-size-2", type=int, default=1) # for few-shot classification
+    parser.add_argument("--learning-rate-1", type=float, default=1e-3) # for general classification
+    parser.add_argument("--learning-rate-2", type=float, default=1e-3) # for few-shot classification
+    parser.add_argument("--scheduler-step-size-1", type=int, default=20) # for general classification
+    parser.add_argument("--scheduler-step-size-2", type=int, default=20) # for few-shot classification
+    parser.add_argument("--scheduler-gamma-1", type=float, default=0.9) # for general classification
+    parser.add_argument("--scheduler-gamma-2", type=float, default=0.9) # for few-shot classification
     args = parser.parse_args()
+
+    save_path = os.path.join("./save", f"{date.today().strftime('%d-%m-%Y-%H:%M')}")
 
     print("=================================================")
     [print("{}:{}".format(arg, getattr(args, arg))) for arg in vars(args)]
@@ -58,8 +62,8 @@ if __name__ == "__main__":
         train_dataset.datas, val_dataset.datas, train_dataset.labels, val_dataset.labels = train_test_split(train_dataset.datas, train_dataset.labels, train_size=0.7)
 
         # data loader for train backbone
-        train_loader = DataLoader(train_dataset, batch_size=args.batch_size_1, shuffle=True, num_workers=4, pin_memory=True)
-        val_loader = DataLoader(val_dataset, batch_size=args.batch_size_1, shuffle=False, num_workers=4, pin_memory=True)
+        train_loader = DataLoader(train_dataset, batch_size=args.batch_size_1, shuffle=True, num_workers=4)
+        val_loader = DataLoader(val_dataset, batch_size=args.batch_size_1, shuffle=False, num_workers=4)
 
     # for fine-tune or train from the scracth with few-shot manners
     few_shot_train_dataset = MiniImageNet(
@@ -89,8 +93,8 @@ if __name__ == "__main__":
     few_shot_val_sampler = CategoriesSampler(few_shot_val_dataset, 200, args.batch_size_2, repeat=False)
 
     # data loader for fine-ture or train from the scratch with few-shot manners
-    few_shot_train_loader = DataLoader(dataset=few_shot_train_dataset, batch_sampler=few_shot_train_sampler, num_workers=4, pin_memory=True)
-    few_shot_val_loader = DataLoader(dataset=few_shot_val_dataset, batch_sampler=few_shot_val_sampler, num_workers=4, pin_memory=True)
+    few_shot_train_loader = DataLoader(dataset=few_shot_train_dataset, batch_sampler=few_shot_train_sampler, num_workers=4)
+    few_shot_val_loader = DataLoader(dataset=few_shot_val_dataset, batch_sampler=few_shot_val_sampler, num_workers=4)
 
     model = Model(
         mode=args.mode,
@@ -201,7 +205,9 @@ if __name__ == "__main__":
         
         if sum(few_shot_val_acc)/len(few_shot_val_acc) > best:
             best = sum(few_shot_val_acc)/len(few_shot_val_acc)
-            torch.save(model.state_dict(), "./save/best.pth")
+            if not os.path.exists(save_path):
+                os.makedirs(save_path)
+            torch.save(model.state_dict(), os.path.join(save_path, "best.pth"))
         print(" Best: {:.2f}%".format(best))
 
         lr_scheduler.step()

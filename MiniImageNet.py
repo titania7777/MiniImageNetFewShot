@@ -31,8 +31,8 @@ class MiniImageNet(Dataset):
             lines = f.readlines()[1:]
             temp = []
             for line in lines:
-                filename, label = line.split(',')
-                self.datas.append(os.path.join(images_path, filename))
+                filename, label = line.strip().split(',')
+                self.datas.append(os.path.join(images_path, setname, label, filename))
                 if label not in temp:
                     temp.append(label)
                     self.num_classes += 1

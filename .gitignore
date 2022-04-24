@@ -1,4 +1,5 @@
 # ignore datas
-/datas
+/data
+/save
 # ignore pycache
 __pycache__
